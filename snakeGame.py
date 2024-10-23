@@ -1,130 +1,108 @@
+#pip install pygame
 import pygame
 import time
 import random
 
-pygame.init()
-
-# functions
+def food():
+    global foodx, foody
+    while True:
+        foodx = random.randrange(10, DISPLAY_SIZE[0] - SNAKE_SIZE, SNAKE_SIZE)
+        foody = random.randrange(10, DISPLAY_SIZE[1] - SNAKE_SIZE, SNAKE_SIZE)
+        food_pos = [foodx, foody]
+        if food_pos in [snake_pos_x, snake_pos_y]:
+            continue
+        else :
+            break
+        
 def message(fonts, msg, color, posx, posy):
-    # render(text, antialias, color, background=None)
-    # antialias - 선을 부드럽게 만드는 그래픽 기법
     mesg = fonts.render(msg, True, color)
     mesg_Rect = mesg.get_rect()
     mesg_Rect.centerx = posx
     mesg_Rect.centery = posy
     screen.blit(mesg, mesg_Rect)
 
-# Frame - while loop 처리 속도
-clock = pygame.time.Clock()
+#food
+foodx = None
+foody = None
 
-# Fonts
-# SysFont(글꼴, size, bold=False, italic=False)
-# print(pygame.font.get_fonts())
-font_gameOver = pygame.font.SysFont('comicsansms', 50)
+DISPLAY_SIZE = (800,600)
+#snake
+SNAKE_SIZE = 20
+snake_pos_x = DISPLAY_SIZE[0]/2 - SNAKE_SIZE/2
+snake_pos_y = DISPLAY_SIZE[1]/2 - SNAKE_SIZE/2
+snake_pos_x_change = 0
+snake_pos_y_change = 0
+snake_speed = 5
+score = 0
+
+#color
+RED = (255,0,0); GREEN = (0,255,0)
+BLUE = (0,0,255); WHITE = (255,255,255) 
+GRAY = (127,127,127)
+
+
+pygame.init()
+#fonts
+font_gameOver = pygame.font.SysFont(None, 50)
 font_madeBy = pygame.font.SysFont(None, 20)
 font_score = pygame.font.SysFont(None, 30)
 
-# colors
-BLUE = (0,0,255); RED = (255,0,0); WHITE = (255,255,255)
-BLACK = (0,0,0); GRAY = (127,127,127); YELLOW = (255,255,0)
-LIGHT_GREEN = (175,215,70)
+clock = pygame.time.Clock()
 
-# screen 
-SCR_WIDTH, SCR_HEIGHT = 800, 600
-screen = pygame.display.set_mode((SCR_WIDTH, SCR_HEIGHT))
-pygame.display.set_caption('Snake Game')
-
-# snake
-snake_list = []
-snake_size = 20
-snake_speed = 5
-snake_pos_x = int(SCR_WIDTH/2 - snake_size/2)
-snake_pos_y = int(SCR_HEIGHT/2 - snake_size/2)
-snake_posx_change = 0
-snake_posy_change = 0
-snake_tail = 1
-
-def snake(snake_size, snake_list):
-    for pos in snake_list:
-        pygame.draw.rect(screen, BLUE, [pos[0], pos[1], snake_size, snake_size])
-
-# food
-foodx = None
-foody = None
-def food():
-    global foodx, foody
-    while True :
-        foodx = random.randrange(10, SCR_WIDTH - snake_size, snake_size) 
-        foody = random.randrange(10, SCR_HEIGHT - snake_size, snake_size)
-        food_pos = [foodx,foody]
-        if food_pos in snake_list :
-            continue
-        else :
-            break
-# score
-score = 0 
-
-def game_score(score):
-    value = 'Score : ' + str(score)
-    message(font_score, value, YELLOW, SCR_WIDTH/2, 30)
-
+screen = pygame.display.set_mode(DISPLAY_SIZE)
+pygame.display.set_caption("SNAKE GAME ver 0.1")
 food()
+print(foodx, foody)
+
 running = True
+
 while running:
-    
     for event in pygame.event.get():
         #print(event)
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
-                snake_posx_change = 0
-                snake_posy_change = -20
-            if event.key == pygame.K_DOWN:
-                snake_posx_change = 0
-                snake_posy_change = 20
-            if event.key == pygame.K_LEFT:
-                snake_posx_change = -20
-                snake_posy_change = 0
-            if event.key == pygame.K_RIGHT:
-                snake_posx_change = 20
-                snake_posy_change = 0
-
-    snake_pos_x += snake_posx_change
-    snake_pos_y += snake_posy_change
-
-    if snake_pos_x >= (SCR_WIDTH - snake_size) or snake_pos_x - (snake_size/2) < 0 \
-        or snake_pos_y >= (SCR_HEIGHT - snake_size) or snake_pos_y - (snake_size/2) < 0:
+                snake_pos_x_change = 0
+                snake_pos_y_change = -20
+            elif event.key == pygame.K_DOWN:
+                snake_pos_x_change = 0
+                snake_pos_y_change = 20
+            elif event.key == pygame.K_LEFT:
+                snake_pos_x_change = -20
+                snake_pos_y_change = 0
+            elif event.key == pygame.K_RIGHT:
+                snake_pos_x_change = 20
+                snake_pos_y_change = 0
+            
+    snake_pos_x += snake_pos_x_change
+    snake_pos_y += snake_pos_y_change
+    screen.fill(WHITE)
+    pygame.draw.rect(screen, GRAY, [0,0, DISPLAY_SIZE[0], DISPLAY_SIZE[1]],10)
+    pygame.draw.rect(screen, RED, [snake_pos_x, snake_pos_y, \
+                                   SNAKE_SIZE,SNAKE_SIZE])
+    pygame.draw.rect(screen, BLUE, [foodx, foody, SNAKE_SIZE, SNAKE_SIZE])
+    message(font_score, "Score : " + str(score), GREEN, DISPLAY_SIZE[0]/2, 30)
+    
+    if snake_pos_x >= (DISPLAY_SIZE[0] - SNAKE_SIZE) or \
+       snake_pos_x - (SNAKE_SIZE/2) < 0 or \
+       snake_pos_y >= (DISPLAY_SIZE[1] - SNAKE_SIZE) or \
+       snake_pos_y - (SNAKE_SIZE/2 ) < 0 :
         running = False
-    
-    screen.fill(LIGHT_GREEN)
-    pygame.draw.rect(screen, GRAY, [0,0, SCR_WIDTH, SCR_HEIGHT], 10)
-    # 10은 사각형 테두리의 크기, 뱀이 외벽의 경계면을 넘어갈때, 이 값을 생각해야 함.
-    pygame.draw.rect(screen, RED, [foodx, foody, 20, 20])
-    #pygame.draw.rect(screen, BLUE, [snake_pos_x, snake_pos_y, snake_size, snake_size])
-    snake_head = []
-    snake_head.append(snake_pos_x)
-    snake_head.append(snake_pos_y)
-    snake_list.append(snake_head)
-    #print(snake_list)
-        
-    if len(snake_list) > snake_tail:
-        del snake_list[0]
-    snake(snake_size, snake_list)
-    game_score(score)
-    pygame.display.flip()
-    
-    if snake_pos_x == foodx and snake_pos_y == foody:
-        #print('Yummy!')
-        food()
-        #snake_speed += 1
-        score += 10
+    if snake_pos_x == foodx and snake_pos_y == foody :
+        #print("Yummy!")
+        snake_speed = snake_speed + 1
+        score = score + 10
         print(score)
-        snake_tail +=1
+        food()
+        
+        
+        
+    pygame.display.update()
     clock.tick(snake_speed)
 
-message(font_gameOver, 'Game Over', RED, int(SCR_WIDTH/2), int(SCR_HEIGHT/2))
-message(font_madeBy, 'made by kig2929kig', GRAY, int(SCR_WIDTH/2), int(SCR_HEIGHT/2) + 40)
+message(font_gameOver, 'Game Over', RED, int(DISPLAY_SIZE[0]/2), int(DISPLAY_SIZE[1]/2))
+message(font_madeBy, 'made by kig2929kig', GRAY, int(DISPLAY_SIZE[0]/2), int(DISPLAY_SIZE[1]/2)+30)
 pygame.display.update()
-time.sleep(2)
+time.sleep(3)
 pygame.quit()
